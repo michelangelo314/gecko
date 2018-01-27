@@ -22,8 +22,12 @@ _config() {
             echo "$CONFIG_PATH" 
         ;;
         *) 
+            SUDO=''
+            if (( $EUID != 0 )); then
+                SUDO="sudo"
+            fi
             echo "Gecko: Opening config"
-            sudo editor "$CONFIG_PATH"
+            $SUDO editor "$CONFIG_PATH"
         ;;
     esac
 }
