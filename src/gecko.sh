@@ -12,17 +12,24 @@ _print_usage() {
 }
 
 _start() {
-    echo "Gecko: Starting miner..."
+    echo "Gecko: Starting miner... (Press Ctrl-C to stop)"
     /usr/local/bin/xmr-stak-cpu "$CONFIG_PATH"
 }
 
 _config() {
-    echo "Gecko: Opening config"
-    sudo "$EDITOR" "$CONFIG_PATH"
+    case "$2" in 
+        path) 
+            echo "$CONFIG_PATH" 
+        ;;
+        *) 
+            echo "Gecko: Opening config"
+            sudo editor "$CONFIG_PATH"
+        ;;
+    esac
 }
 
 case "$1" in 
-    start)   _start          ;;\
-    config)  _config         ;;
+    start)   _start          ;;
+    config)  _config "$@"    ;;  
     *)       _print_usage    ;;
 esac

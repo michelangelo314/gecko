@@ -11,7 +11,7 @@ _detect_os() {
     fi
 
     if [ -z "$(uname -v | grep Ubuntu)" ]; then
-        echo "Gecko can only be installed on Ubuntu 16.04 and you appear to be using something else. Please clone the project on github and add support for your distro! (https://github.com/michelangelo314/gecko)"
+        echo "Gecko can only be installed on Ubuntu 16.04 and you appear to be using something else. Please fork the project on github and add support for your distro! (https://github.com/michelangelo314/gecko)"
         exit 1
     fi 
 }
@@ -33,7 +33,7 @@ _check_env() {
 
 _try_setup_hugepages() {
     echo "Trying to setup huge pages..."
-    sysctl -w vm.nr_hugepages=128
+    sysctl -w vm.nr_hugepages=128 &> /dev/null
     echo "vm.nr_hugepages=128" >> /etc/sysctl.conf
     sysctl -p  &> /dev/null
     echo "*   soft    memlock 262144" >> /etc/security/limits.conf
@@ -44,7 +44,7 @@ _try_setup_hugepages() {
 _install_prereqs() {
     echo "Installing prereqs..."
 
-    local PREREQS='curl htop vim apt-transport-https libmicrohttpd10 libssl1.0.0'
+    local PREREQS='curl htop vim apt-transport-https libmicrohttpd10 libssl1.0.0 ca-certificates'
     apt-get update &> /dev/null
     apt-get install -qq -y $PREREQS &> /dev/null
 }
@@ -52,7 +52,7 @@ _install_prereqs() {
 _install_xmr_stak() {
     echo "Installing xmr-stak ${XMR_STAK_VERSION}..."
 
-    local BUILD_DEPS='ca-certificates cmake curl g++ libmicrohttpd-dev libssl-dev make'
+    local BUILD_DEPS='cmake g++ libmicrohttpd-dev libssl-dev make'
     apt-get --no-install-recommends -qq -y install $BUILD_DEPS &> /dev/null
     rm -rf /var/lib/apt/lists/* 
 
@@ -64,23 +64,18 @@ _install_xmr_stak() {
     cmake .. &> /dev/null
     make -j$(nproc)  &> /dev/null
     cp bin/xmr-stak-cpu /usr/local/bin/
+    curl --output "$CONFIG_PATH" -sL "$CONFIG_URL"
 
-    #rm -r /usr/local/src/xmr-stak-cpu 
+    rm -r /usr/local/src/xmr-stak-cpu 
     apt-get -qq --auto-remove purge $BUILD_DEPS &> /dev/null
 
-    echo "xmr-stack installed to /usr/local/bin/xmr-stak-cpu..."     
-}
-
-_install_config() {
-    curl --output "$CONFIG_PATH" -sL "$CONFIG_URL"
-    echo "Configuration file installed to ${CONFIG_PATH}"
-    echo "Open your config file with a text editor and change it to use your pool and wallet information."
+    echo "xmr-stack installation completed"     
 }
 
 _install_gecko() {
     echo "Installing scripting..."
-    sudo curl --output "$APP_PATH" -sL "$APP_URL"
-    sudo chmod +x "$APP_PATH"
+    curl --output "$APP_PATH" -sL "$APP_URL"
+    chmod +x "$APP_PATH"
     echo "Gecko installed to ${APP_PATH}"
 }
 
@@ -94,6 +89,6 @@ _check_env
 _try_setup_hugepages
 _install_prereqs
 _install_xmr_stak
-# _install_gecko
+_install_gecko
 
 echo "Gecko installer completed. Certified Turtlefied!"
