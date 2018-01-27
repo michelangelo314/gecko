@@ -10,7 +10,7 @@ _detect_os() {
         exit 1
     fi
 
-    if [ -z "$(uname -v | grep Ubuntu)" ]; then
+    if [ -z "$(awk -F= '/^NAME/{print $2}' /etc/os-release)" ]; then
         echo "Gecko can only be installed on Ubuntu 16.04 and you appear to be using something else. Please fork the project on github and add support for your distro! (https://github.com/michelangelo314/gecko)"
         exit 1
     fi 
